@@ -1,6 +1,6 @@
 # STATE
 
-**Product:** Ledgerport — convert bank/credit-card CSV exports to QBO / OFX / QIF entirely in the browser (files never leave the device).
+**Product (v1.2):** Ledgerport — turn messy bank exports into verified, duplicate-free QuickBooks imports. Preflight verdict, cent-exact reconciliation + balance proof, duplicate firewall, SHA-256 proof reports — all client-side. See docs/LEDGERPORT_EXECUTION_STATE.md for the v1.2 build ledger. 178 tests.
 **Customer:** Bookkeepers, accountants, and small-business owners whose bank only exports CSV but whose accounting software (QuickBooks Desktop, Quicken, Xero, GnuCash) needs QBO/OFX/QIF.
 **Promise:** Turn any bank CSV into a clean, import-ready QBO/OFX/QIF file in under a minute, with zero upload.
 
