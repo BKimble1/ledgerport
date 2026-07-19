@@ -4,6 +4,7 @@ import { convertRows, guessMapping, looksLikeHeader } from "./lib/convert";
 import { generateOfx, generateQbo } from "./lib/ofx";
 import { generateCleanCsv, generateQif } from "./lib/qif";
 import { loadPreset, savePreset } from "./lib/presets";
+import { checkFileSupported, isEmbedded } from "./lib/filetype";
 import { SAMPLE_CSV, SAMPLE_FILENAME } from "./lib/sample";
 import { formatAmount } from "./lib/amount";
 import {
@@ -18,6 +19,12 @@ interface LoadedFile {
   rows: string[][];
   hasHeader: boolean;
   presetApplied: boolean;
+}
+
+interface ExportedFile {
+  filename: string;
+  content: string;
+  mime: string;
 }
 
 const PREVIEW_LIMIT = 200;
@@ -54,12 +61,21 @@ export default function Converter() {
   const [status, setStatus] = useState<string | null>(null);
   const [showPaste, setShowPaste] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [lastExport, setLastExport] = useState<ExportedFile | null>(null);
+  const [copied, setCopied] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const pasteRef = useRef<HTMLTextAreaElement>(null);
+  const embedded = isEmbedded();
 
   const loadText = useCallback((text: string, name: string) => {
     setLoadError(null);
     setStatus(null);
+    setLastExport(null);
+    const unsupported = checkFileSupported(name, text.slice(0, 300));
+    if (unsupported) {
+      setLoadError(unsupported);
+      return;
+    }
     const parsed = Papa.parse<string[]>(text.replace(/^﻿/, ""), {
       skipEmptyLines: "greedy",
     });
@@ -133,22 +149,70 @@ export default function Converter() {
     if (!file || !mapping || !result || result.transactions.length === 0) return;
     try {
       const base = baseName(file.name);
+      let out: ExportedFile;
       if (format === "qbo")
-        download(generateQbo(result.transactions, account), `${base}.qbo`, "application/vnd.intu.qbo");
+        out = { filename: `${base}.qbo`, content: generateQbo(result.transactions, account), mime: "application/vnd.intu.qbo" };
       else if (format === "ofx")
-        download(generateOfx(result.transactions, account), `${base}.ofx`, "application/x-ofx");
+        out = { filename: `${base}.ofx`, content: generateOfx(result.transactions, account), mime: "application/x-ofx" };
       else if (format === "qif")
-        download(generateQif(result.transactions, account), `${base}.qif`, "application/qif");
+        out = { filename: `${base}.qif`, content: generateQif(result.transactions, account), mime: "application/qif" };
       else
-        download(generateCleanCsv(result.transactions), `${base}-clean.csv`, "text/csv");
+        out = { filename: `${base}-clean.csv`, content: generateCleanCsv(result.transactions), mime: "text/csv" };
+      download(out.content, out.filename, out.mime);
+      setLastExport(out);
+      setCopied(false);
       if (file.hasHeader) {
         savePreset(file.headers, mapping, account);
-        setStatus(`Exported ${result.transactions.length} transactions as .${format === "csv" ? "csv" : format}. Your column mapping was saved for next time.`);
+        setStatus(`Exported ${result.transactions.length} transactions as ${out.filename}. Your column mapping was saved for next time.`);
       } else {
-        setStatus(`Exported ${result.transactions.length} transactions as .${format === "csv" ? "csv" : format}.`);
+        setStatus(`Exported ${result.transactions.length} transactions as ${out.filename}.`);
       }
     } catch (e) {
       setStatus(`Export failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  };
+
+  const copyExport = async () => {
+    if (!lastExport) return;
+    try {
+      await navigator.clipboard.writeText(lastExport.content);
+      setCopied(true);
+    } catch {
+      // Clipboard API blocked — fall back to a selectable textarea
+      const ta = document.createElement("textarea");
+      ta.value = lastExport.content;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+      } finally {
+        ta.remove();
+      }
+    }
+  };
+
+  const saveExportAs = async () => {
+    if (!lastExport) return;
+    const w = window as unknown as {
+      showSaveFilePicker?: (opts: object) => Promise<{ createWritable: () => Promise<{ write: (s: string) => Promise<void>; close: () => Promise<void> }> }>;
+    };
+    if (!w.showSaveFilePicker) {
+      download(lastExport.content, lastExport.filename, lastExport.mime);
+      return;
+    }
+    try {
+      const handle = await w.showSaveFilePicker({
+        suggestedName: lastExport.filename,
+        types: [{ description: "Export", accept: { "text/plain": [".qbo", ".ofx", ".qif", ".csv"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(lastExport.content);
+      await writable.close();
+      setStatus(`Saved ${lastExport.filename}.`);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return; // user cancelled
+      download(lastExport.content, lastExport.filename, lastExport.mime);
     }
   };
 
@@ -159,6 +223,8 @@ export default function Converter() {
     setLoadError(null);
     setStatus(null);
     setShowPaste(false);
+    setLastExport(null);
+    setCopied(false);
     if (fileInput.current) fileInput.current.value = "";
   };
 
@@ -575,8 +641,26 @@ export default function Converter() {
           </div>
         </div>
         <div aria-live="polite">
-          {status && <p className="export-note">{status}</p>}
+          {status && <p className="export-note export-status">{status}</p>}
         </div>
+        {lastExport && (
+          <div className="fallback-strip">
+            <span>
+              Didn't get the file{embedded ? " (embedded previews often block downloads)" : ""}?
+            </span>
+            <button className="btn btn-sm" onClick={saveExportAs}>
+              Save {lastExport.filename} again…
+            </button>
+            <button className="btn btn-sm" onClick={copyExport}>
+              {copied ? "Copied ✓" : "Copy file contents"}
+            </button>
+            {copied && (
+              <span className="fallback-hint">
+                Paste into Notepad and save as <code>{lastExport.filename}</code>.
+              </span>
+            )}
+          </div>
+        )}
         <p className="export-note">
           Files are generated and downloaded on this device. Nothing is uploaded anywhere.
         </p>

@@ -1,4 +1,16 @@
+import { useEffect, useState } from "react";
 import Converter from "./Converter";
+import { GuidePage, PrivacyPage, TermsPage } from "./pages";
+
+type Route = "home" | "guide" | "privacy" | "terms";
+
+function currentRoute(): Route {
+  const h = window.location.hash;
+  if (h.startsWith("#/guide")) return "guide";
+  if (h.startsWith("#/privacy")) return "privacy";
+  if (h.startsWith("#/terms")) return "terms";
+  return "home";
+}
 
 const FAQ: Array<{ q: string; a: JSX.Element }> = [
   {
@@ -67,6 +79,37 @@ const FAQ: Array<{ q: string; a: JSX.Element }> = [
 ];
 
 export default function App() {
+  const [route, setRoute] = useState<Route>(currentRoute);
+
+  useEffect(() => {
+    const onHash = () => {
+      const r = currentRoute();
+      setRoute(r);
+      if (r !== "home" || window.location.hash === "#top" || window.location.hash === "") {
+        window.scrollTo({ top: 0 });
+      }
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const nav =
+    route === "home" ? (
+      <nav className="header-nav" aria-label="Site">
+        <a href="#how">How it works</a>
+        <a href="#faq">FAQ</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#/guide">Import guides</a>
+      </nav>
+    ) : (
+      <nav className="header-nav" aria-label="Site">
+        <a href="#top">Converter</a>
+        <a href="#/guide">Import guides</a>
+        <a href="#/privacy">Privacy</a>
+        <a href="#/terms">Terms</a>
+      </nav>
+    );
+
   return (
     <>
       <header className="site-header">
@@ -79,15 +122,27 @@ export default function App() {
             </svg>
             Ledgerport
           </a>
-          <nav className="header-nav" aria-label="Site">
-            <a href="#how">How it works</a>
-            <a href="#faq">FAQ</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#privacy">Privacy</a>
-          </nav>
+          {nav}
         </div>
       </header>
 
+      {route === "guide" && (
+        <main>
+          <GuidePage />
+        </main>
+      )}
+      {route === "privacy" && (
+        <main>
+          <PrivacyPage />
+        </main>
+      )}
+      {route === "terms" && (
+        <main>
+          <TermsPage />
+        </main>
+      )}
+
+      {route === "home" && (
       <main id="top">
         <section className="hero wrap">
           <span className="privacy-chip">
@@ -183,14 +238,25 @@ export default function App() {
               browser's local storage, which you control and can clear at any time. Financial
               statements are sensitive — the safest place for them is the device they're already on.
             </p>
+            <p style={{ marginTop: "0.75rem" }}>
+              <a href="#/privacy">Read the full privacy policy →</a>
+            </p>
           </div>
         </section>
       </main>
+      )}
 
       <footer className="site-footer">
         <div className="wrap">
-          <span>© 2026 Ledgerport · Operated by Idlery Services LLC</span>
-          <span>
+          <div className="footer-left">
+            <span>© 2026 Ledgerport · Operated by Idlery Services LLC</span>
+            <nav className="footer-nav" aria-label="Footer">
+              <a href="#/guide">Import guides</a>
+              <a href="#/privacy">Privacy</a>
+              <a href="#/terms">Terms</a>
+            </nav>
+          </div>
+          <span className="footer-trademark">
             Not affiliated with Intuit, QuickBooks, or Quicken. QuickBooks and Quicken are trademarks
             of their respective owners.
           </span>

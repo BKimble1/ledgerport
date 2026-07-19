@@ -69,17 +69,33 @@ setup, `LAUNCH.md` sales kit, `HUMAN_ACTIONS.md` owner steps, `STATE.md`/`DECISI
   nosniff, frame-deny) preconfigured; blocked only on owner login — exact steps in
   HUMAN_ACTIONS.md. Production build verified locally in preview mode.
 
+## 11b. Post-launch iteration (same session)
+
+User feedback ("pages missing, downloads failing") addressed and verified:
+- **Root cause of failed downloads:** sandboxed embedded previews (like the Artifact iframe) block
+  anchor downloads. Fix: after every export a fallback strip offers **Save as…** (File System
+  Access API), **Copy file contents** (clipboard w/ execCommand fallback), and re-download, with an
+  embedded-context hint. Verified working.
+- **New pages:** `#/guide` (step-by-step import instructions for QuickBooks Desktop/Online,
+  Quicken, Xero, GnuCash, Wave/Banktivity/YNAB4), `#/privacy` (full policy), `#/terms` — hash
+  routing, header/footer nav, scroll reset, back links. All render verified.
+- **Friendly rejections:** Excel (.xlsx/ZIP magic), PDF, already-converted QBO/OFX/QIF, images —
+  each with actionable guidance. Unit-tested + browser-verified.
+- **UI polish:** blur sticky header, panel shadows, card hover lifts, row hovers, active button
+  states, `prefers-reduced-motion` support.
+
 ## 12–13. Testing performed & results
 
-- **Unit:** 102/102 pass (amount 33, dates 28, convert 18, formats 23) — `npx vitest run`.
+- **Unit:** 111/111 pass (amount 33, dates 28, convert 18, formats 23, filetype 9) — `npx vitest run`.
 - **Typecheck:** `tsc --noEmit` clean. **Prod build:** clean (64 kB gzip).
-- **Browser (production build, Chrome):** sample flow end-to-end; **.qbo file downloaded and
-  verified on disk** (correct OFX 1.02 SGML header, INTU.BID, accounts, amounts); OFX validated
-  well-formed via DOMParser (8/8 transactions); empty-paste and single-column error states;
-  semicolon-delimited European DMY debit/credit CSV incl. live remap to debit/credit mode with
-  correct signs; bad rows listed with reasons; preset save/recall across reloads; 375 px layout
-  (no horizontal overflow, table scrolls internally); keyboard operation (visible focus, Enter
-  activates); zero console errors.
+- **Browser (production build, Chrome):** sample flow end-to-end; **.qbo files downloaded and
+  verified on disk** (8-row sample and a 5,000-row file — 703 KB, all 5,000 STMTTRN records,
+  converted in 185 ms); real file-input path exercised with actual File objects; OFX validated
+  well-formed via DOMParser; empty-paste, single-column, Excel, PDF, and already-converted-file
+  error states; tab-delimited debit/credit auto-detection; semicolon-delimited European DMY CSV
+  incl. live remap with correct signs; bad rows listed with reasons; preset save/recall across
+  reloads; export fallback strip + clipboard copy; pages routing (#/guide, #/privacy, #/terms);
+  375 px layout; keyboard operation; zero console errors.
 - **Deployed artifact:** loads, renders, and completed the sample workflow via keyboard.
 - **Known test-environment caveat:** Chrome blocked *automated* second downloads per origin
   (extension clicks aren't trusted gestures), so only the .qbo download was disk-verified; the
