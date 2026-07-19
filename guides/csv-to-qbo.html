@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Convert CSV to QBO for QuickBooks Desktop — Ledgerport</title>
+<meta name="description" content="QuickBooks Desktop can't import CSV bank transactions — only .QBO Web Connect files. Here's how to convert safely, in your browser, without uploading your statement.">
+<link rel="canonical" href="https://bkimble1.github.io/ledgerport/guides/csv-to-qbo.html">
+<meta property="og:title" content="Convert CSV to QBO for QuickBooks Desktop"><meta property="og:description" content="QuickBooks Desktop can't import CSV bank transactions — only .QBO Web Connect files. Here's how to convert safely, in your browser, without uploading your statement.">
+<style>
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;color:#1c2431;background:#faf9f6;max-width:720px;margin:0 auto;padding:1.5rem 1.25rem 4rem;line-height:1.6}
+h1{font-family:Georgia,serif;font-size:1.9rem;line-height:1.2}
+h2{font-family:Georgia,serif;font-size:1.25rem;margin-top:1.8rem}
+a{color:#0e7a5f}
+.top{font-size:.9rem;margin-bottom:2rem}
+.cta{display:inline-block;background:#0e7a5f;color:#fff;font-weight:600;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:1rem 0}
+ol li,ul li{margin:.4rem 0}
+code{background:#f1efe9;padding:.1em .35em;border-radius:4px}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #ddd8cc;font-size:.85rem;color:#8a91a0}
+</style></head><body>
+<nav class="top"><a href="../">← Ledgerport converter</a> · <a href="index.html">All guides</a></nav>
+<h1>Convert CSV to QBO (QuickBooks Desktop)</h1>
+<p>QuickBooks Desktop imports bank transactions only through <strong>Web Connect .QBO files</strong> — it will not
+accept a CSV, no matter how clean. If your bank only offers CSV downloads, or you need months that are no longer
+available through bank feeds, you need a converter.</p>
+<h2>What a correct QBO file needs</h2>
+<ul><li>OFX 1.02 SGML structure with an <code>INTU.BID</code> bank identifier QuickBooks recognizes</li>
+<li>A unique, stable <code>FITID</code> per transaction (this is how QuickBooks deduplicates)</li>
+<li>Correct account type — checking/savings vs credit card use different structures</li>
+<li>Dates as <code>YYYYMMDD</code> and plain signed amounts</li></ul>
+<h2>Steps</h2>
+<ol><li>Download the CSV from your bank.</li>
+<li>Open Ledgerport, drop the CSV in — columns, dates, and amount signs are detected automatically and every
+unreadable row is listed with its reason.</li>
+<li>Check the preflight verdict and reconciliation (totals to the cent, duplicate check, balance proof when your
+CSV has a running balance column).</li>
+<li>Download the .QBO, then in QuickBooks: <strong>File → Utilities → Import → Web Connect Files</strong>.</li></ol>
+<h2>If QuickBooks rejects the file</h2>
+<p>The most common cause is the INTU.BID — QuickBooks validates it against its bank directory. Ledgerport lets you
+set your bank's BID under Advanced settings. See <a href="quickbooks-rejected-csv.html">QuickBooks rejected my file</a>.</p>
+<a class="cta" href="../">Convert your CSV now — free, nothing uploaded</a>
+<footer>Ledgerport processes files entirely in your browser. Not affiliated with or endorsed by Intuit;
+QuickBooks and Quicken are trademarks of their owners. Destination software applies its own validation —
+Ledgerport checks format compatibility, not every private rule.</footer>
+</body></html>
