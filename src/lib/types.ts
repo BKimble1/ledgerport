@@ -18,6 +18,8 @@ export interface ColumnMapping {
   memo: number;
   /** optional check-number column (-1 = none) */
   checkNumber: number;
+  /** optional running-balance column (-1 = none) — enables balance-proof reconciliation */
+  balance: number;
   /** flip the sign of every amount (bank exported deposits as negative, etc.) */
   flipSign: boolean;
   /** date format id from dates.ts, or "auto" */
@@ -27,13 +29,28 @@ export interface ColumnMapping {
 export interface Transaction {
   /** ISO date YYYY-MM-DD */
   date: string;
-  /** signed: negative = money out */
+  /** signed dollars: negative = money out (display/back-compat; cents is canonical) */
   amount: number;
+  /** signed integer cents — canonical value for all arithmetic */
+  cents: number;
   description: string;
   memo: string;
   checkNumber: string;
   /** unique per file, stable per row */
   fitid: string;
+  /** 0-based index into the source data rows */
+  rawIndex: number;
+  /** the original untouched cells for inspection */
+  raw: string[];
+  /** running balance in cents, when a balance column is mapped and parseable */
+  balanceCents: number | null;
+  /** duplicate classification, when flagged */
+  dupStatus?: "exact-file" | "history" | "possible";
+  /** excluded transactions stay visible but are not exported */
+  excluded: boolean;
+  excludeReason?: string;
+  /** non-blocking notes: "summary-row", "pending", "no-description", "zero-amount", "serial-date" */
+  flags: string[];
 }
 
 export interface RowIssue {

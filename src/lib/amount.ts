@@ -11,6 +11,15 @@ export function parseAmount(raw: string): number | null {
   if (s === "") return null;
 
   let negative = false;
+  let forcedSign: 1 | -1 | null = null;
+
+  // CR/DR (credit/debit) indicators: "82.17 DR" → -82.17, "CR 82.17" → +82.17
+  const crdr = s.match(/^(?:(CR|DR|DB)\.?\s+)?(.*?)(?:\s+(CR|DR|DB)\.?)?$/i);
+  if (crdr) {
+    const ind = (crdr[1] || crdr[3] || "").toUpperCase();
+    if (ind === "CR") { forcedSign = 1; s = crdr[2]; }
+    else if (ind === "DR" || ind === "DB") { forcedSign = -1; s = crdr[2]; }
+  }
 
   // Parentheses accounting negative: (45.00)
   if (/^\(.*\)$/.test(s)) {
@@ -64,7 +73,8 @@ export function parseAmount(raw: string): number | null {
 
   const n = Number(s);
   if (!Number.isFinite(n)) return null;
-  const value = negative ? -n : n;
+  let value = negative ? -n : n;
+  if (forcedSign !== null) value = forcedSign * Math.abs(value);
   return Math.round(value * 100) / 100;
 }
 

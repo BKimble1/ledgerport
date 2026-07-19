@@ -8,6 +8,24 @@ or clean CSV — entirely in the browser. No uploads, no accounts, no backend.
 **Who it's for:** bookkeepers, accountants, and small-business owners whose bank only exports CSV
 but whose accounting software (QuickBooks Desktop, Quicken, Xero, GnuCash) needs QBO/OFX/QIF.
 
+## Import assurance (v1.2)
+
+Beyond conversion, Ledgerport verifies the result before it reaches your books:
+
+- **Import preflight** — Ready / Ready-with-warnings / Review-required / Blocked verdict with every
+  finding listed (row numbers, reasons, what was auto-handled)
+- **Reconciliation** — money in/out/net in exact integer-cent arithmetic; every source row accounted
+  for; **balance proof** (opening + net = closing) when the CSV has a running-balance column
+- **Duplicate firewall** — exact in-file duplicates auto-excluded; hashed local history flags
+  transactions already exported in earlier sessions (opt-out, clearable, one-way hashes only)
+- **Conversion proof report** — printable HTML with SHA-256 fingerprints of source and output,
+  mapping used, totals, every exclusion + reason, preflight findings; account numbers masked
+- **Explainable rows** — inspect any transaction: original cells → interpretation → exported form
+- **Nonfinancial guard** — a contacts list or other non-bank CSV gets a clear explanation, not
+  silently skipped rows
+- **Summary-row, CR/DR, and Excel-serial-date handling**; spreadsheet formula-injection protection
+  in CSV exports; privacy-safe support diagnostics (structure only, never data)
+
 ## Features
 
 - Drag-and-drop, file picker, or paste CSV text; labeled sample data included

@@ -3,10 +3,27 @@ import { generateOfx, generateQbo } from "./ofx";
 import { generateCleanCsv, generateQif } from "./qif";
 import { DEFAULT_ACCOUNT, type AccountSettings, type Transaction } from "./types";
 
+export const mkTxn = (t: Partial<Transaction>): Transaction => ({
+  date: "2026-06-01",
+  amount: 0,
+  cents: 0,
+  description: "X",
+  memo: "",
+  checkNumber: "",
+  fitid: "F0",
+  rawIndex: 0,
+  raw: [],
+  balanceCents: null,
+  excluded: false,
+  flags: [],
+  ...t,
+  ...(t.amount !== undefined && t.cents === undefined ? { cents: Math.round(t.amount * 100) } : {}),
+});
+
 const txns: Transaction[] = [
-  { date: "2026-06-01", amount: 2500, description: "OPENING DEPOSIT", memo: "", checkNumber: "", fitid: "F1" },
-  { date: "2026-06-03", amount: -84.19, description: "ACME OFFICE SUPPLY & TOOLS <BULK>", memo: "card 4421", checkNumber: "", fitid: "F2" },
-  { date: "2026-06-05", amount: -1200, description: "RENT", memo: "", checkNumber: "1042", fitid: "F3" },
+  mkTxn({ date: "2026-06-01", amount: 2500, description: "OPENING DEPOSIT", fitid: "F1" }),
+  mkTxn({ date: "2026-06-03", amount: -84.19, description: "ACME OFFICE SUPPLY & TOOLS <BULK>", memo: "card 4421", fitid: "F2", rawIndex: 1 }),
+  mkTxn({ date: "2026-06-05", amount: -1200, description: "RENT", checkNumber: "1042", fitid: "F3", rawIndex: 2 }),
 ];
 
 const acct: AccountSettings = {
@@ -38,7 +55,7 @@ describe("generateQbo", () => {
     expect(out).toContain("&amp;");
     expect(out).not.toContain("<BULK>");
     const short = generateQbo(
-      [{ date: "2026-06-01", amount: -5, description: "A <B> & C", memo: "", checkNumber: "", fitid: "X" }],
+      [mkTxn({ amount: -5, description: "A <B> & C", fitid: "X" })],
       acct
     );
     expect(short).toContain("<NAME>A &lt;B&gt; &amp; C");
@@ -120,7 +137,7 @@ describe("generateCleanCsv", () => {
   });
   it("quotes cells containing commas", () => {
     const withComma = generateCleanCsv([
-      { date: "2026-06-01", amount: -5, description: "A, B", memo: "", checkNumber: "", fitid: "X" },
+      mkTxn({ amount: -5, description: "A, B", fitid: "X" }),
     ]);
     expect(withComma).toContain('"A, B"');
   });

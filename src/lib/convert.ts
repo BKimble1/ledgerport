@@ -1,5 +1,5 @@
 import { parseAmount } from "./amount";
-import { parseDate, detectDateOrder, type DateOrder } from "./dates";
+import { parseDate, detectDateOrder, detectExcelSerialColumn, parseExcelSerial, type DateOrder } from "./dates";
 import type { ColumnMapping, ConversionResult, RowIssue, Transaction } from "./types";
 
 /** Does the first row look like column headers rather than data? */
@@ -22,8 +22,9 @@ const HEADER_HINTS: Array<{ field: keyof typeof HINT_TARGETS; re: RegExp }> = [
   { field: "credit", re: /^(credit|deposits?|money[ ._-]?in|paid[ ._-]?in|payments?|received)( ?\(?\+?\)?| amount)?$/i },
   { field: "memo", re: /^(memo|notes?|reference|ref(erence)?[ ._-]?(no|number|#)?|category)$/i },
   { field: "checkNumber", re: /^(check[ ._-]?(no|number|#)?|cheque[ ._-]?(no|number|#)?|chk[ ._-]?#?|slip[ ._-]?#?)$/i },
+  { field: "balance", re: /^((running|current|available)[ ._-]?)?balance$|^bal\.?$/i },
 ];
-const HINT_TARGETS = { date: 0, description: 0, amount: 0, debit: 0, credit: 0, memo: 0, checkNumber: 0 };
+const HINT_TARGETS = { date: 0, description: 0, amount: 0, debit: 0, credit: 0, memo: 0, checkNumber: 0, balance: 0 };
 
 /**
  * Guess a column mapping from headers + data sampling.
@@ -62,7 +63,7 @@ export function guessMapping(headers: string[], rows: string[][]): ColumnMapping
   // Fill amount: first numeric column that isn't the date and has signed/varied values.
   if (found.amount === undefined && found.debit === undefined && found.credit === undefined) {
     for (let c = 0; c < colCount; c++) {
-      if (c === found.date || c === found.checkNumber) continue;
+      if (c === found.date || c === found.checkNumber || c === found.balance) continue;
       if (isNumericCol(c) && !sample.every((r) => parseDate(String(r[c] ?? ""), "MDY"))) {
         found.amount = c;
         break;
@@ -74,7 +75,7 @@ export function guessMapping(headers: string[], rows: string[][]): ColumnMapping
   if (found.description === undefined) {
     let best = -1, bestAvg = 0;
     for (let c = 0; c < colCount; c++) {
-      if ([found.date, found.amount, found.debit, found.credit, found.memo, found.checkNumber].includes(c)) continue;
+      if ([found.date, found.amount, found.debit, found.credit, found.memo, found.checkNumber, found.balance].includes(c)) continue;
       const texts = sample.map((r) => String(r[c] ?? "").trim());
       if (!texts.some((t) => t && parseAmount(t) === null)) continue;
       const avg = texts.reduce((a, t) => a + t.length, 0) / Math.max(1, texts.length);
@@ -96,6 +97,7 @@ export function guessMapping(headers: string[], rows: string[][]): ColumnMapping
     credit: found.credit ?? -1,
     memo: found.memo ?? -1,
     checkNumber: found.checkNumber ?? -1,
+    balance: found.balance ?? -1,
     flipSign: false,
     dateFormat: detectDateOrder(dateSamples),
   };
@@ -109,6 +111,10 @@ function makeFitid(date: string, amount: number, description: string, seq: numbe
   return `${date.replace(/-/g, "")}${String(h).padStart(10, "0")}${seq}`;
 }
 
+/** Rows whose description marks them as statement furniture rather than transactions. */
+const SUMMARY_RE =
+  /^\s*((sub)?totals?|(beginning|opening|ending|closing|available|current)\s+balance|balance\s+(forward|brought|carried)( forward)?|statement\s+(total|summary))\b/i;
+
 /** Apply a mapping to parsed rows, producing transactions + per-row issues. */
 export function convertRows(rows: string[][], mapping: ColumnMapping): ConversionResult {
   const issues: RowIssue[] = [];
@@ -120,6 +126,8 @@ export function convertRows(rows: string[][], mapping: ColumnMapping): Conversio
       ? detectDateOrder(rows.map((r) => String(r[mapping.date] ?? "")))
       : (mapping.dateFormat as Exclude<DateOrder, "auto">);
 
+  const serialDates = detectExcelSerialColumn(rows.map((r) => String(r[mapping.date] ?? "")));
+
   const fitidCounts = new Map<string, number>();
 
   rows.forEach((row, i) => {
@@ -128,10 +136,18 @@ export function convertRows(rows: string[][], mapping: ColumnMapping): Conversio
       return;
     }
 
+    const descCell =
+      mapping.description >= 0 ? String(row[mapping.description] ?? "").trim() : "";
+    const isSummaryText = SUMMARY_RE.test(descCell);
+
     const rawDate = String(row[mapping.date] ?? "").trim();
-    const date = parseDate(rawDate, order);
+    const date = serialDates ? parseExcelSerial(rawDate) : parseDate(rawDate, order);
     if (!date) {
-      issues.push({ row: i, field: "date", message: rawDate ? `Unrecognized date "${rawDate}"` : "Missing date" });
+      if (isSummaryText) {
+        issues.push({ row: i, field: "row", message: `Skipped summary row ("${descCell.slice(0, 40)}")` });
+      } else {
+        issues.push({ row: i, field: "date", message: rawDate ? `Unrecognized date "${rawDate}"` : "Missing date" });
+      }
       return;
     }
 
@@ -155,12 +171,25 @@ export function convertRows(rows: string[][], mapping: ColumnMapping): Conversio
       }
     }
     if (mapping.flipSign) amount = -amount;
-    amount = Math.round(amount * 100) / 100;
+    const cents = Math.round(amount * 100);
+    amount = cents / 100;
 
-    const description =
-      (mapping.description >= 0 ? String(row[mapping.description] ?? "").trim() : "") || "TRANSACTION";
+    const description = descCell || "TRANSACTION";
     const memo = mapping.memo >= 0 ? String(row[mapping.memo] ?? "").trim() : "";
     const checkNumber = mapping.checkNumber >= 0 ? String(row[mapping.checkNumber] ?? "").trim() : "";
+
+    let balanceCents: number | null = null;
+    if (mapping.balance >= 0) {
+      const b = parseAmount(String(row[mapping.balance] ?? ""));
+      if (b !== null) balanceCents = Math.round(b * 100);
+    }
+
+    const flags: string[] = [];
+    if (!descCell) flags.push("no-description");
+    if (cents === 0) flags.push("zero-amount");
+    if (/\bpending\b/i.test(descCell)) flags.push("pending");
+    if (serialDates) flags.push("serial-date");
+    if (isSummaryText) flags.push("summary-row");
 
     const key = `${date}|${amount}|${description}`;
     const seq = (fitidCounts.get(key) ?? 0) + 1;
@@ -169,10 +198,17 @@ export function convertRows(rows: string[][], mapping: ColumnMapping): Conversio
     transactions.push({
       date,
       amount,
+      cents,
       description,
       memo,
       checkNumber,
       fitid: makeFitid(date, amount, description, seq),
+      rawIndex: i,
+      raw: row,
+      balanceCents,
+      excluded: isSummaryText,
+      excludeReason: isSummaryText ? "Looks like a balance/total summary row, not a transaction" : undefined,
+      flags,
     });
   });
 

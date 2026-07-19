@@ -11,6 +11,7 @@ const baseMapping: ColumnMapping = {
   credit: -1,
   memo: -1,
   checkNumber: -1,
+  balance: -1,
   flipSign: false,
   dateFormat: "MDY",
 };

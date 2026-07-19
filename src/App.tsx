@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import Converter from "./Converter";
-import { GuidePage, PrivacyPage, TermsPage } from "./pages";
+import { PRICING } from "./config";
+import { GuidePage, PrivacyPage, RefundsPage, TermsPage } from "./pages";
 
-type Route = "home" | "guide" | "privacy" | "terms";
+type Route = "home" | "guide" | "privacy" | "terms" | "refunds";
 
 function currentRoute(): Route {
   const h = window.location.hash;
   if (h.startsWith("#/guide")) return "guide";
   if (h.startsWith("#/privacy")) return "privacy";
   if (h.startsWith("#/terms")) return "terms";
+  if (h.startsWith("#/refunds")) return "refunds";
   return "home";
 }
 
@@ -63,6 +65,40 @@ const FAQ: Array<{ q: string; a: JSX.Element }> = [
         They are never silently dropped into your export. The preview counts every skipped row and
         lists each one with its row number and the reason, so you can fix the CSV or the column
         mapping before downloading.
+      </p>
+    ),
+  },
+  {
+    q: "How does the duplicate firewall work?",
+    a: (
+      <p>
+        Inside one file, identical rows are flagged and excluded automatically. Across conversions,
+        Ledgerport keeps a local history of <em>hashed fingerprints</em> of what you've already
+        exported — if next month's download overlaps last month's, the overlap is caught before it
+        reaches QuickBooks. The history is one-way hashes stored only in your browser: it can't be
+        turned back into transactions, you can clear it any time, and you can turn it off entirely.
+      </p>
+    ),
+  },
+  {
+    q: "What is the conversion proof report?",
+    a: (
+      <p>
+        A printable record generated with every export: SHA-256 fingerprints of the source and output
+        files, the column mapping used, money in/out and net movement in exact cents, the date range,
+        every excluded row with its reason, and the preflight findings. Bookkeepers can file it with
+        the client's records as evidence of what was converted and why. Account numbers are masked.
+      </p>
+    ),
+  },
+  {
+    q: "What does 'balance proof' mean?",
+    a: (
+      <p>
+        If your CSV has a running-balance column, Ledgerport checks that the opening balance plus the
+        net of all transactions equals the closing balance — the same check an auditor would do. If a
+        row is missing or misread, the proof fails and tells you, instead of letting an incomplete
+        import into your books.
       </p>
     ),
   },
@@ -141,6 +177,11 @@ export default function App() {
           <TermsPage />
         </main>
       )}
+      {route === "refunds" && (
+        <main>
+          <RefundsPage />
+        </main>
+      )}
 
       {route === "home" && (
       <main id="top">
@@ -151,11 +192,12 @@ export default function App() {
             </svg>
             100% in your browser — your data never leaves this device
           </span>
-          <h1>Turn any bank CSV into a QuickBooks-ready file</h1>
+          <h1>Turn messy bank exports into verified QuickBooks imports</h1>
           <p className="sub">
-            Convert bank and credit-card CSV exports to <strong>.QBO</strong>, <strong>.OFX</strong>,{" "}
-            <strong>.QIF</strong>, or clean CSV — with smart column mapping, date and amount
-            normalization, and nothing uploaded to anyone's server.
+            Ledgerport repairs malformed transactions, catches duplicates before they reach your books,
+            reconciles your totals to the cent, and runs an import preflight — then exports{" "}
+            <strong>.QBO</strong>, <strong>.OFX</strong>, <strong>.QIF</strong>, or clean CSV.
+            All on your device; nothing is uploaded.
           </p>
           <Converter />
         </section>
@@ -174,18 +216,19 @@ export default function App() {
               </div>
               <div className="step">
                 <span className="step-n">STEP 2</span>
-                <h3>Check the mapping</h3>
+                <h3>Preflight &amp; reconcile</h3>
                 <p>
-                  Columns are detected automatically. Fix anything with two clicks and watch the
-                  preview update live, with every unparseable row flagged.
+                  Ledgerport auto-detects columns, excludes summary rows and duplicates, reconciles
+                  totals in exact cents, and tells you whether the file is import-ready — before you
+                  download anything.
                 </p>
               </div>
               <div className="step">
                 <span className="step-n">STEP 3</span>
-                <h3>Download &amp; import</h3>
+                <h3>Export with proof</h3>
                 <p>
-                  Export .QBO for QuickBooks Desktop, .OFX for Xero/GnuCash, .QIF for Quicken, or a
-                  clean CSV for QuickBooks Online — then import as usual.
+                  Download .QBO, .OFX, .QIF, or clean CSV — plus a hash-stamped conversion proof
+                  report recording totals, exclusions, and every change made.
                 </p>
               </div>
               <div className="step">
@@ -218,11 +261,13 @@ export default function App() {
             <div className="pricing-note">
               <div className="price">Free during launch</div>
               <p>
-                Every format, every feature, no signup. A paid tier (batch conversion of multiple
-                files, synced mapping presets, priority support) is planned at{" "}
-                <strong>$29/year</strong> — a fraction of the $25–39 <em>per month</em> that
-                server-based converters charge. Converting your own statements will always work
-                without an account.
+                Every format and every assurance feature — preflight, reconciliation, duplicate
+                firewall, proof reports — free while Ledgerport is in launch, no signup. Planned
+                pricing: <strong>${PRICING.perExport}</strong> per verified export, or{" "}
+                <strong>${PRICING.proMonthly}/month</strong> for professionals (unlimited exports,
+                saved layouts, batch workflow) — a fraction of the $25–39/month that server-based
+                converters charge for less verification. Converting your own statements will always
+                work without an account, and files never touch a server either way.
               </p>
             </div>
           </div>
@@ -254,6 +299,8 @@ export default function App() {
               <a href="#/guide">Import guides</a>
               <a href="#/privacy">Privacy</a>
               <a href="#/terms">Terms</a>
+              <a href="#/refunds">Refunds</a>
+              <a href="guides/">Help articles</a>
             </nav>
           </div>
           <span className="footer-trademark">

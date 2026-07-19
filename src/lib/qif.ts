@@ -32,12 +32,14 @@ function sanitize(s: string): string {
  * Clean CSV export (QuickBooks Online 4-column layout: Date, Description, Credit, Debit).
  */
 export function generateCleanCsv(txns: Transaction[]): string {
+  // Spreadsheet formula-injection guard: a text cell must never start with = + - @ or a tab.
+  const guard = (s: string) => (/^[=+\-@\t\r]/.test(s) ? `'${s}` : s);
   const escapeCell = (s: string) => (/[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
   const rows = txns.map((t) => {
     const credit = t.amount > 0 ? formatAmount(t.amount) : "";
     const debit = t.amount < 0 ? formatAmount(Math.abs(t.amount)) : "";
     const desc = [t.description, t.memo].filter(Boolean).join(" — ");
-    return [isoToQifDate(t.date), escapeCell(desc), credit, debit].join(",");
+    return [isoToQifDate(t.date), escapeCell(guard(desc)), credit, debit].join(",");
   });
   return ["Date,Description,Credit,Debit", ...rows].join("\r\n") + "\r\n";
 }

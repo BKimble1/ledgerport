@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuickBooks rejected my CSV or QBO file — how to fix it — Ledgerport</title>
+<meta name="description" content="Why QuickBooks rejects imported bank files: INTU.BID validation, wrong account type, duplicate FITIDs, malformed structure — and how to fix each one.">
+<link rel="canonical" href="https://bkimble1.github.io/ledgerport/guides/quickbooks-rejected-csv.html">
+<meta property="og:title" content="QuickBooks rejected my CSV or QBO file — how to fix it"><meta property="og:description" content="Why QuickBooks rejects imported bank files: INTU.BID validation, wrong account type, duplicate FITIDs, malformed structure — and how to fix each one.">
+<style>
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;color:#1c2431;background:#faf9f6;max-width:720px;margin:0 auto;padding:1.5rem 1.25rem 4rem;line-height:1.6}
+h1{font-family:Georgia,serif;font-size:1.9rem;line-height:1.2}
+h2{font-family:Georgia,serif;font-size:1.25rem;margin-top:1.8rem}
+a{color:#0e7a5f}
+.top{font-size:.9rem;margin-bottom:2rem}
+.cta{display:inline-block;background:#0e7a5f;color:#fff;font-weight:600;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:1rem 0}
+ol li,ul li{margin:.4rem 0}
+code{background:#f1efe9;padding:.1em .35em;border-radius:4px}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #ddd8cc;font-size:.85rem;color:#8a91a0}
+</style></head><body>
+<nav class="top"><a href="../">← Ledgerport converter</a> · <a href="index.html">All guides</a></nav>
+<h1>QuickBooks rejected my file — now what?</h1>
+<p>Import rejections almost always come down to one of these:</p>
+<h2>1. It's a CSV and you're on QuickBooks Desktop</h2>
+<p>Desktop doesn't import CSV bank transactions at all. Convert to .QBO first — see
+<a href="csv-to-qbo.html">CSV to QBO</a>.</p>
+<h2>2. "This bank is not recognized" — INTU.BID</h2>
+<p>Every .qbo file carries an <code>INTU.BID</code> bank identifier that QuickBooks validates against its
+directory. If the ID isn't recognized, the import fails before it looks at a single transaction. Fix: find your
+bank's BID (search "INTU.BID list"), enter it in Ledgerport's Advanced panel, and re-export.</p>
+<h2>3. Wrong account type</h2>
+<p>A credit-card export imported into a checking account (or vice versa) fails or posts reversed. The file's
+internal account type must match the QuickBooks account — set it in Ledgerport's account settings.</p>
+<h2>4. Duplicate FITIDs</h2>
+<p>QuickBooks silently skips transactions whose FITID it has seen before. If a previous import used the same IDs,
+new transactions may not appear. Ledgerport generates stable content-based FITIDs and its duplicate firewall
+warns when you're re-exporting transactions you already imported.</p>
+<h2>5. Malformed structure</h2>
+<p>Hand-edited or badly generated files break on unescaped characters (<code>&amp;</code> especially), missing
+required tags, or wrong date formats. Regenerating the file from the original CSV is faster than repairing by hand.</p>
+<a class="cta" href="../">Convert your CSV now — free, nothing uploaded</a>
+<footer>Ledgerport processes files entirely in your browser. Not affiliated with or endorsed by Intuit;
+QuickBooks and Quicken are trademarks of their owners. Destination software applies its own validation —
+Ledgerport checks format compatibility, not every private rule.</footer>
+</body></html>

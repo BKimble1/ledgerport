@@ -105,6 +105,25 @@ export function detectDateOrder(samples: string[]): Exclude<DateOrder, "auto"> {
   return "MDY";
 }
 
+/**
+ * Excel serial date (days since 1899-12-30) → ISO, gated to 1954–2064 so
+ * plain amounts are never mistaken for dates. Returns null outside the gate.
+ */
+export function parseExcelSerial(raw: string): string | null {
+  const s = String(raw ?? "").trim();
+  if (!/^\d{5}(\.0+)?$/.test(s)) return null;
+  const n = Math.floor(Number(s));
+  if (n < 20000 || n > 60000) return null;
+  const ms = Date.UTC(1899, 11, 30) + n * 86400000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/** True when a date column is Excel serial numbers (every non-empty sample qualifies). */
+export function detectExcelSerialColumn(samples: string[]): boolean {
+  const nonEmpty = samples.map((s) => String(s ?? "").trim()).filter(Boolean);
+  return nonEmpty.length > 0 && nonEmpty.every((s) => parseExcelSerial(s) !== null);
+}
+
 /** ISO YYYY-MM-DD → OFX date YYYYMMDD (with noon time to dodge timezone shifts). */
 export function isoToOfxDate(iso: string): string {
   return iso.replace(/-/g, "") + "120000";

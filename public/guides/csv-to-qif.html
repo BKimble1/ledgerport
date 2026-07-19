@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Convert CSV to QIF for Quicken — Ledgerport</title>
+<meta name="description" content="Turn bank CSV exports into QIF files for Quicken, YNAB4, and legacy finance tools — with correct dates, signs, and check numbers, all in your browser.">
+<link rel="canonical" href="https://bkimble1.github.io/ledgerport/guides/csv-to-qif.html">
+<meta property="og:title" content="Convert CSV to QIF for Quicken"><meta property="og:description" content="Turn bank CSV exports into QIF files for Quicken, YNAB4, and legacy finance tools — with correct dates, signs, and check numbers, all in your browser.">
+<style>
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;color:#1c2431;background:#faf9f6;max-width:720px;margin:0 auto;padding:1.5rem 1.25rem 4rem;line-height:1.6}
+h1{font-family:Georgia,serif;font-size:1.9rem;line-height:1.2}
+h2{font-family:Georgia,serif;font-size:1.25rem;margin-top:1.8rem}
+a{color:#0e7a5f}
+.top{font-size:.9rem;margin-bottom:2rem}
+.cta{display:inline-block;background:#0e7a5f;color:#fff;font-weight:600;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:1rem 0}
+ol li,ul li{margin:.4rem 0}
+code{background:#f1efe9;padding:.1em .35em;border-radius:4px}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #ddd8cc;font-size:.85rem;color:#8a91a0}
+</style></head><body>
+<nav class="top"><a href="../">← Ledgerport converter</a> · <a href="index.html">All guides</a></nav>
+<h1>Convert CSV to QIF (Quicken)</h1>
+<p>QIF is the veteran interchange format that Quicken, YNAB4, Banktivity, and most legacy finance tools still read.
+It's line-oriented and simple, but the details matter: bank vs credit-card type headers, <code>MM/DD/YYYY</code>
+dates, signed amounts, and <code>N</code> lines for check numbers.</p>
+<h2>Steps</h2>
+<ol><li>Drop your bank CSV into Ledgerport — the account type you pick sets the QIF type header
+(<code>!Type:Bank</code> or <code>!Type:CCard</code>).</li>
+<li>Review preflight and reconciliation, then download the .QIF.</li>
+<li>In Quicken: <strong>File → File Import → QIF File</strong>. Newer Quicken Windows versions hide QIF import for
+some account types — import into a cash account first, then move the transactions.</li></ol>
+<h2>Gotchas</h2>
+<ul><li>QIF has no unique transaction IDs, so import the same file twice and you'll get duplicates — Ledgerport's
+local duplicate firewall warns you before that happens.</li>
+<li>Descriptions with line breaks corrupt QIF; Ledgerport strips them automatically.</li></ul>
+<a class="cta" href="../">Convert your CSV now — free, nothing uploaded</a>
+<footer>Ledgerport processes files entirely in your browser. Not affiliated with or endorsed by Intuit;
+QuickBooks and Quicken are trademarks of their owners. Destination software applies its own validation —
+Ledgerport checks format compatibility, not every private rule.</footer>
+</body></html>

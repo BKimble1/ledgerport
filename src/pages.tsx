@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { PRICING, SUPPORT_EMAIL } from "./config";
 
 function Page({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   return (
@@ -108,10 +109,16 @@ export function PrivacyPage() {
           address, time, page requested) for security and capacity purposes. Those logs never
           contain your file contents, which do not leave your device.
         </p>
+        <h2>Verify it yourself</h2>
+        <p>
+          Open your browser's developer tools (F12 → Network tab) while converting: you'll see no
+          request carries your file or its contents. Or load the page, disconnect from the internet,
+          and convert offline — everything still works, because there is nothing to talk to.
+        </p>
         <h2>Contact</h2>
         <p>
-          Ledgerport is operated by Idlery Services LLC. Questions about this policy: contact the
-          operator through the support channel listed where you obtained this tool.
+          Ledgerport is operated by Idlery Services LLC. Questions about this policy:{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
         </p>
         <p className="legal-meta">Last updated July 19, 2026.</p>
       </section>
@@ -157,6 +164,33 @@ export function TermsPage() {
         <p>
           These terms may be updated as the product evolves; the "last updated" date below will
           change when they do. Continued use after a change means you accept the updated terms.
+        </p>
+        <p className="legal-meta">Last updated July 19, 2026. Operated by Idlery Services LLC.</p>
+      </section>
+    </Page>
+  );
+}
+
+export function RefundsPage() {
+  return (
+    <Page title="Refund policy" intro="Simple, because the product is currently free.">
+      <section className="legal">
+        <h2>Today</h2>
+        <p>
+          Ledgerport is free during launch. There is nothing to refund, no account to close, and no
+          card on file — we never collected one.
+        </p>
+        <h2>When paid plans arrive</h2>
+        <p>
+          Planned pricing is ${PRICING.perExport} per verified export or ${PRICING.proMonthly}/month
+          for professionals. When those go live, the policy will be: if an export you paid for fails
+          to import into your accounting software and our import guides plus support can't get it
+          working, you get that payment back — no argument. Subscription payments will be refundable
+          within 14 days of first charge, and cancellation will always be self-serve.
+        </p>
+        <h2>Contact</h2>
+        <p>
+          Refund or billing questions: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
         </p>
         <p className="legal-meta">Last updated July 19, 2026. Operated by Idlery Services LLC.</p>
       </section>
