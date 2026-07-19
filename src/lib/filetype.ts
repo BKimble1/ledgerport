@@ -7,12 +7,7 @@ export function checkFileSupported(name: string, firstBytes: string): string | n
   if (/\.pdf$/.test(lower) || firstBytes.startsWith("%PDF")) {
     return "This is a PDF statement. Ledgerport converts CSV exports — most banks offer a separate CSV/Excel download next to the PDF.";
   }
-  if (/\.(qbo|ofx|qfx)$/.test(lower) || /^OFXHEADER/i.test(firstBytes.trim()) || firstBytes.includes("<OFX>")) {
-    return "This file is already in QBO/OFX format — you can import it into your accounting software directly, no conversion needed.";
-  }
-  if (/\.qif$/.test(lower) || firstBytes.trimStart().startsWith("!Type:")) {
-    return "This is already a QIF file — Quicken and most tools can import it directly.";
-  }
+  // QBO/OFX/QIF files are NOT rejected here — they route into Import Rescue Mode.
   if (firstBytes.startsWith("{\\rtf") || /\.(docx?|zip|png|jpe?g)$/.test(lower)) {
     return "This doesn't look like a CSV file. Export your transactions as CSV from your bank and load that file.";
   }

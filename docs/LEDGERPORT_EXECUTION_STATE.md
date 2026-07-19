@@ -27,6 +27,16 @@ UI: App.tsx (landing+routes), Converter.tsx (workflow), pages.tsx. Vitest (111 g
 - [x] Audits: financial correctness, dup-risk, privacy/network, a11y, mobile, copy truthfulness
 - [x] Deploy + live smoke test; final report
 
+## Round 2 (post-v1.2)
+- [x] Import Rescue Mode: broken QBO/OFX/QIF → diagnosis (dup FITIDs, unescaped &, missing INTU.BID/
+      structure) → transactions recovered into the normal pipeline → clean regeneration. rescue.ts + 12 tests
+      (incl. exact-cents round trips) + E2E verified.
+- [x] PWA: manifest + icon + hand-written sw.js (network-first navigations = never-stale updates;
+      cache-first hashed assets; offline shell). Registered PROD-only, top-frame-only. Verified registered+cached.
+- [x] JSON-LD SoftwareApplication; keyed fragments + toggle-button a11y fixes; testutil.ts dedup.
+- [ ] DEFERRED (documented): batch multi-file + ZIP proof bundle; client workspaces; Stripe checkout
+      (needs owner credentials/server); web-worker parsing; table virtualization.
+
 ## Decisions
 - All totals in integer cents (float only at parse/display edges).
 - Dup history = hashed fingerprints in localStorage (not IndexedDB — scale is small; simpler = safer), opt-out + clear.

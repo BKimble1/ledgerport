@@ -12,12 +12,10 @@ describe("checkFileSupported", () => {
     expect(checkFileSupported("statement.csv", "PKrest")).toMatch(/Excel/));
   it("rejects PDF by magic", () =>
     expect(checkFileSupported("statement.csv", "%PDF-1.7 ...")).toMatch(/PDF/));
-  it("rejects an existing QBO/OFX file with guidance", () =>
-    expect(checkFileSupported("download.qbo", "OFXHEADER:100\nDATA:OFXSGML")).toMatch(/directly/));
-  it("rejects OFX content sniffed in a txt", () =>
-    expect(checkFileSupported("x.txt", "junk <OFX> junk")).toMatch(/QBO\/OFX/));
-  it("rejects an existing QIF file", () =>
-    expect(checkFileSupported("moves.qif", "!Type:Bank\nD07/01/2026")).toMatch(/QIF/));
+  it("lets QBO/OFX files through to rescue mode", () =>
+    expect(checkFileSupported("download.qbo", "OFXHEADER:100\nDATA:OFXSGML")).toBeNull());
+  it("lets QIF files through to rescue mode", () =>
+    expect(checkFileSupported("moves.qif", "!Type:Bank\nD07/01/2026")).toBeNull());
   it("rejects images by extension", () =>
     expect(checkFileSupported("scan.png", "PNG")).toMatch(/CSV/));
 });

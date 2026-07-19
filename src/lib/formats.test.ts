@@ -3,22 +3,7 @@ import { generateOfx, generateQbo } from "./ofx";
 import { generateCleanCsv, generateQif } from "./qif";
 import { DEFAULT_ACCOUNT, type AccountSettings, type Transaction } from "./types";
 
-export const mkTxn = (t: Partial<Transaction>): Transaction => ({
-  date: "2026-06-01",
-  amount: 0,
-  cents: 0,
-  description: "X",
-  memo: "",
-  checkNumber: "",
-  fitid: "F0",
-  rawIndex: 0,
-  raw: [],
-  balanceCents: null,
-  excluded: false,
-  flags: [],
-  ...t,
-  ...(t.amount !== undefined && t.cents === undefined ? { cents: Math.round(t.amount * 100) } : {}),
-});
+import { mkTxn } from "./testutil";
 
 const txns: Transaction[] = [
   mkTxn({ date: "2026-06-01", amount: 2500, description: "OPENING DEPOSIT", fitid: "F1" }),

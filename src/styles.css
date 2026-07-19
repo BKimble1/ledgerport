@@ -270,6 +270,9 @@ section.band h2 { font-size: 1.7rem; margin-bottom: 1.5rem; }
 .settings-details > summary::before { content: "▸ "; color: var(--accent); }
 .settings-details[open] > summary::before { content: "▾ "; }
 .nf-panel h2 { color: var(--danger); }
+.rescue-panel { border-left: 4px solid var(--accent); }
+.rescue-findings { color: var(--ink-soft); font-size: 0.92rem; margin: 0.5rem 0; padding-left: 1.25rem; }
+.rescue-findings li { margin: 0.3rem 0; }
 .nf-panel ul { color: var(--ink-soft); }
 .profiles-box { max-width: 680px; margin: 1.25rem auto 0; text-align: center; }
 .profiles-list { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.6rem; }

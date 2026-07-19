@@ -40,10 +40,12 @@ const FAQ: Array<{ q: string; a: JSX.Element }> = [
     q: "QuickBooks rejected my .qbo file — what now?",
     a: (
       <p>
-        The usual cause is the <code>INTU.BID</code> — an Intuit bank identifier QuickBooks validates
-        inside every .qbo file. Open <em>Advanced: QuickBooks bank identity</em> in step 2 and enter
-        your own bank's BID (searchable online as "INTU.BID list"). Also make sure the file's account
-        type (checking vs. credit card) matches the QuickBooks account you're importing into.
+        Drop the rejected .qbo straight back into Ledgerport — <strong>Import Rescue Mode</strong>{" "}
+        reads it, diagnoses the common causes (missing INTU.BID, duplicate transaction IDs, unescaped
+        characters, malformed structure), and regenerates a clean file. The most frequent culprit is
+        the <code>INTU.BID</code> bank identifier: open <em>Advanced: QuickBooks bank identity</em>{" "}
+        and enter your bank's BID (searchable online as "INTU.BID list"). Also make sure the account
+        type (checking vs. credit card) matches the QuickBooks account.
       </p>
     ),
   },

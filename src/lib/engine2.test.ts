@@ -8,7 +8,7 @@ import { clearHistory, historyCount, markHistoryDuplicates, markInFileDuplicates
 import { generateCleanCsv } from "./qif";
 import { deletePreset, exportPresets, importPresets, listPresets, loadPreset, renamePreset, savePreset } from "./presets";
 import type { ColumnMapping } from "./types";
-import { mkTxn } from "./formats.test";
+import { mkTxn } from "./testutil";
 
 // node has no localStorage — back it with a Map
 beforeEach(() => {
