@@ -63,11 +63,16 @@ setup, `LAUNCH.md` sales kit, `HUMAN_ACTIONS.md` owner steps, `STATE.md`/`DECISI
 
 ## 11. Deployment
 
-- **Live now (smoke-tested):** https://claude.ai/code/artifact/8427256a-23db-4957-87aa-c9be9c3f8747
-  (single-file build; private to owner until shared from the page's Share menu).
-- **Public hosting:** repo is deploy-ready for Netlify/Vercel with security headers (CSP,
-  nosniff, frame-deny) preconfigured; blocked only on owner login — exact steps in
-  HUMAN_ACTIONS.md. Production build verified locally in preview mode.
+- **PUBLIC PRODUCTION (smoke-tested):** https://bkimble1.github.io/ledgerport/ — GitHub Pages
+  from public repo https://github.com/BKimble1/ledgerport, with a GitHub Actions workflow that
+  tests, typechecks, builds, and redeploys on every push to master. Verified live: sample flow,
+  .qbo downloaded to disk with valid OFX header, pages routing.
+- **Also live:** https://claude.ai/code/artifact/8427256a-23db-4957-87aa-c9be9c3f8747 (single-file
+  Artifact build with sandbox download fallback; private until shared).
+- **Alt hosting ready:** `netlify.toml`/`vercel.json` with security headers, if the owner later
+  prefers a private repo + Netlify/Vercel.
+- **Auth note:** GitHub CLI authenticated as BKimble1 (user-directed OAuth device flow, standard
+  gh scopes, token in OS keyring; never displayed or committed).
 
 ## 11b. Post-launch iteration (same session)
 
