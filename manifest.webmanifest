@@ -1,0 +1,13 @@
+{
+  "name": "Ledgerport — verified bank CSV conversion",
+  "short_name": "Ledgerport",
+  "description": "Turn messy bank exports into verified, duplicate-free QuickBooks imports. Everything runs on your device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#0e7a5f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
